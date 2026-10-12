@@ -1,0 +1,43 @@
+# Literature Roadmap：启动与使用
+
+先交流研究目标和检索词，种子初筛后确认主题范围，再自主扩展引用；最后交付 Zotero、XMind，以及范围取舍和下载求助清单。无需先写一份完整需求文档，可以给方向、种子论文或已有资料目录。
+
+## 启动需要什么
+
+| 项目 | 配置方式 | 是否必需 |
+| --- | --- | --- |
+| Google Scholar / HasData | 已授权的 HasData Scholar MCP，或运行时提供 `HASDATA_API_KEY` | Scholar 检索需要；已有有效连接无需再提供 key |
+| Zotero | 可写 MCP；或 Web API 的 `ZOTERO_API_KEY`，以及 `users/<数字用户ID>` / `groups/<组ID>` | 自动入库需要写权限和目标库 |
+| Zotero Local API | 启动客户端、开启本机 API；可选 `ZOTERO_LOCAL_API_KEY` 或客户端授权 | 本地方案的替代配置，只有可读 API 不足以写入 |
+| Python | Python 3.9+，随附脚本使用标准库 | 本地校验、导图导出及 API 同步需要 |
+| XMind | 可以打开 `.xmind` 的客户端 | 导出不需要 key；客户端用于打开和查看 |
+| 机构访问 | 已登录的图书馆/出版平台会话 | 可选；学校 SSO 密码、MFA 由用户自行输入 |
+
+不要把真实 key 写入 README、skill、调研目录或聊天输出。优先配置 MCP 的凭据管理；直接 API 备用路径从进程环境读取凭据。`HASDATA_API_KEY` 是 agent 备用调用的环境变量约定，随附脚本不包含 Scholar 搜索客户端，也不会自动配置 MCP。更换凭据时更新运行环境即可，不修改论文状态。
+
+HasData 备用接口为 `https://api.hasdata.com/scrape/google/scholar`，通过 `x-api-key` 请求头传入运行时凭据。用已确认的一个查询检查连接，保留响应状态、查询参数和结果数，不保存认证头。引用模式额外核验返回 URL 中的 `cites`。接口细节见 [工具适配](references/integrations.md)。
+
+Zotero API key 可在 [Zotero Keys](https://www.zotero.org/settings/keys) 管理，确保目标库访问与写入权限。下例在已安全配置环境变量后运行，`<skill>`、`<run>`、数字 ID 需要替换成实际值：
+
+```text
+python <skill>/scripts/zotero_sync.py probe --mode web --library users/<数字ID>
+python <skill>/scripts/zotero_sync.py sync <run> --mode web --library users/<数字ID>
+python <skill>/scripts/roadmap.py check <run>
+python <skill>/scripts/roadmap.py export <run>
+```
+
+`probe` 仅确认可读性，不证明写入成功；真实同步须逐项读回。已有同一调研的同步状态应复用，切换库或 Local/Web 模式前核对身份，避免重复创建。
+
+## 如何开始
+
+可以说：“用 literature-roadmap 调研 Java 反序列化防御，材料在这个目录。先和我讨论检索词，再找种子并确定细分 scope。”继续时提供原调研目录即可，不需要重新回答已确认的问题。
+
+默认只收英文；优先 CCF A/B/C 与近两年预印本，排除已核实不在 CCF 的期刊论文，预印本豁免。非 CCF 会议另按范围约定。不同项目可在启动讨论时修改这些筛选条件。没有固定篇数上限，通过相关性控制范围。
+
+## 交付和需要你参与的地方
+
+- 检索前：核对目标、检索词和边界。
+- 种子后：决定主方向、核心细分主题与对照范围。
+- 汇报时：决定有争议的 scope 是否继续，协助获取确实受阻的全文。
+
+`roadmap.xmind` 展示确认纳入的论文；已读摘要且相关但全文受阻的条目标“需用户帮助下载”。`download-help.md` 给出链接和已尝试来源。未完成初筛的候选留在后台，不作为“待判断”论文堆进主图；后台积压仍属于未完成工作。`scope.md` 保存确认，`papers.jsonl`、`queue.jsonl` 与证据 Markdown 支持继续调研。
