@@ -31,6 +31,24 @@ phase：scope/seeds/taxonomy/expansion/review。coverage：in_progress/blocked/c
 
 新调研额外记录 `gates.queries` 的检索词确认；`scope` 保存目标与初始边界，`seeds`、`taxonomy` 可引用同一次种子后讨论，`final` 保存最后统一反馈。旧调研缺 queries 记录时查历史，不能编造确认或强制重问已有答案。自动校验不替代交互节点的执行。
 
+硬性筛选条件记录在 `gates.requirements`；所有确认依据必须可追溯到用户实际回复及其对应方案。提问前增加以下等待字段（无待答问题时为 null 或不存在），然后发出问题并结束本轮：
+
+```json
+{
+  "awaiting_user": {
+    "gate": "queries",
+    "scope_version": 1,
+    "proposal": "scope.md 中本轮检索词与 Scholar/arXiv 渠道方案的完整内容或稳定快照路径",
+    "question": "请确认或修改这组检索词及渠道分工。",
+    "asked_at": "实际提问时间"
+  }
+}
+```
+
+恢复时先检查 `awaiting_user`，再检查队列。没有用户回复则保持等待；既不能新增批准记录，也不能运行下一阶段。明确批准后在 `scope.md` 保存方案、用户回复依据、日期和范围版本，更新对应 `gates`，清除等待字段。方案被修改则保留旧记录并重建待确认方案；旧范围的批准不能自动授权新增分支。`phase` 保持当前阶段，不将 waiting 填成新的 phase 值，避免破坏旧数据。
+
+这些字段用于 agent 恢复流程，不是脚本实现的工具调用拦截器。当前 `check` 不核实用户消息、也不阻断直接联网调用；严格的运行时强制需要宿主在等待状态禁用后续调研工具。不要把状态记录或脚本检查成功声称为任意模型都无法越过关口。
+
 relations 示例：`{"from":"p1","to":"p2","kind":"improves","verified":true,"evidence":"出版页URL；§3 p.5；具体改进依据","label":"改进搜索"}`。
 
 ## papers.jsonl

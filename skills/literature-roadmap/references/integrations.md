@@ -10,6 +10,20 @@
 
 官方说明：https://docs.hasdata.com/apis/google-scholar/scholar
 
+## arXiv API（补充渠道）
+
+先确认检索方案，再调用。用途：按主题补充近期预印本、取得真实摘要和版本元数据、为缺全文论文寻找开放版本。它不是 cited-by 服务，不能替代 Scholar 向前引用队列。Scholar 受阻时，只能继续已获确认的 arXiv 补充任务，并保留 Scholar 的 blocked 状态；未确认检索词时，两边都不能先试搜。
+
+官方公开 Atom 查询接口 `https://export.arxiv.org/api/query` 不需要 API key。使用现有 HTTP/MCP 工具或标准库请求即可，随附脚本不包含 arXiv 客户端。把用户审核过的概念转换为 `ti:` / `abs:` 等字段及 AND/OR 查询；转换语法不改变研究范围，新增概念则回到范围确认流程。通过 `search_query` 或已知 `id_list` 检索，`start` / `max_results` 分页；保存完整请求参数、日期、原始响应和下一页位置，不把每页大小当总量上限。
+
+读取 Atom 的 title、summary（真实摘要）、authors、published、updated、版本 ID、PDF 链接，以及可选 DOI、journal_ref。published 是首版日期，updated 是版本更新日期；近期更新不等于近期首次公开。作者提供的 journal_ref/DOI 需要核对正式出版页与 CCF，不能把 arXiv 条目直接称为 CCF 论文，也不能用预印本版本规避已确认的正式发表筛选条件。按基础 arXiv ID / DOI 与现有记录关联版本，不能另算一篇独立研究。
+
+按官方当前要求，所有同源调用合计最多每三秒一次、单连接；缓存响应，遇 429/服务错误保存进度并退避，不能把错误 Atom entry 当成论文或零结果。需要 PDF 时使用返回链接并核验内容；摘要足以判断相关性时可以先归类，正文未读必须如实标注。
+
+官方参考（使用前如有变化按官方更新）：
+- [API 手册](https://info.arxiv.org/help/api/user-manual.html)
+- [调用限制](https://info.arxiv.org/help/api/tou.html)
+
 ## 全文
 
 顺序：Zotero 附件 → OA 正式版 → 预印本/作者稿 → 已授权机构会话。记录版本、文件类型和可读性，拒绝把登录 HTML 当论文。正文提取保留页码/章节，用原 PDF 检查关键表格与公式。

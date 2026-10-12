@@ -6,10 +6,14 @@ Skill 名称：`literature-roadmap`。面向支持 `SKILL.md` 的智能体环境
 
 ## 工作流程
 
-1. **检索前讨论**：描述研究目标，可提供论文、文档或资料目录。智能体通过逐步提问澄清边界，并与使用者确认关键词及检索组合。
-2. **种子后讨论**：阅读真实摘要初筛种子，结合可获取的 Introduction、Related Work 提出主题树；讨论哪些细分 scope 核心展开、仅作对照或排除。
-3. **自主调研**：以 Google Scholar 为主，追踪参考文献和被引论文，核对来源与发表等级，逐批消化筛选队列。
-4. **统一汇报**：交付导图与文献库，集中讨论剩余范围取舍和全文下载求助。
+1. **硬性条件确认**：语言、CCF/预印本等发表门槛、时间范围和交付位置。
+2. **scope 确认**：阅读提供的材料，通过逐步提问澄清研究目标与边界。
+3. **检索方案确认**：审核关键词、组合与渠道分工，然后阅读真实摘要获得种子。
+4. **种子后讨论**：结合可获取的 Introduction、Related Work 提出主方向、经典问题和主题树；确认哪些细分 scope 核心展开、仅作对照或排除。
+5. **自主调研**：以 Google Scholar 为主，arXiv 补充预印本、摘要和开放全文；追踪参考文献及 Scholar 被引论文，核对来源与发表等级，逐批消化筛选队列。
+6. **统一汇报**：可执行队列处理完后交付导图与文献库，集中讨论剩余范围取舍和全文下载求助。受阻任务保留，不冒充完成。
+
+**每个确认问题发出后必须结束当前轮次，收到明确回复后才能继续。** 异步工具返回、用户未回答或预选项都不是同意。已确认阶段内部自主执行；未确认的新方向先记录，收尾时统一讨论。
 
 已读摘要并确认相关、但全文获取受阻的论文仍进入导图，标注“需用户帮助下载”。尚未筛选的候选留在后台，不作为“待判断”节点堆入导图；未处理完的工作不会被算作调研完成。
 
@@ -40,6 +44,8 @@ cp -R papercollection_skill/skills/literature-roadmap "${CODEX_HOME:-$HOME/.code
 
 需要可用的 Google Scholar / HasData 连接。自动写入 Zotero 还需要可写连接或 Zotero Web API key 与目标库 ID。Python 3.9+ 用于运行附带脚本，不需要第三方 Python 依赖。XMind 用来查看导出的 `.xmind` 文件。
 
+arXiv 公开 API 无需 key，可作为经过确认的补充渠道；不提供 Scholar 被引列表。具体查询、分页、版本识别与限流规则见 [工具适配](skills/literature-roadmap/references/integrations.md)。
+
 具体 API key 名称、配置路径、连接检查和命令见 [启动指南](skills/literature-roadmap/README.md)。仓库不提供真实凭据，也不自动加载 `.env`；请使用连接器凭据管理或运行时环境变量。
 
 启动示例：
@@ -54,7 +60,7 @@ cp -R papercollection_skill/skills/literature-roadmap "${CODEX_HOME:-$HOME/.code
 
 ```text
 skills/literature-roadmap/
-├── SKILL.md                 智能体入口与三阶段交互要求
+├── SKILL.md                 智能体入口与逐节点停轮要求
 ├── README.md                连接、凭据配置与使用说明
 ├── agents/openai.yaml       Codex 展示信息
 ├── references/              研究流程、状态格式、工具适配
@@ -74,5 +80,7 @@ python -X utf8 -m unittest discover -s skills/literature-roadmap/tests -v
 ```
 
 测试覆盖导图结构、候选隔离、下载求助条件及 Zotero 同步的去重和已有内容保护，使用模拟 API，不需要 key，也不访问真实文献库。测试不能替代真实检索、全文阅读或 XMind 客户端检查。
+
+技能指令与 `awaiting_user` 状态不等于宿主强制拦截。更换模型/宿主后，按 [行为验收场景](skills/literature-roadmap/tests/interaction-scenarios.md) 复测停轮；需要严格保证时，由宿主在等待确认阶段禁用后续调研工具。不能用 Python 单元测试通过来宣称任意模型都遵守流程。
 
 Zotero 同步脚本管理条目、受管理笔记及收藏夹关联；PDF 上传需要可用的附件工具另行完成。机构登录由使用者自行完成密码与 MFA。工具受阻时保存进度并如实报告覆盖缺口。
